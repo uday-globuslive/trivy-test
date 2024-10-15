@@ -3,10 +3,10 @@ name: Trivy Security Scan
 on:
   push:
     branches:
-      - main
+      - cmd
   pull_request:
     branches:
-      - main
+      - cmd
 
 jobs:
   trivy_scan:
@@ -28,17 +28,19 @@ jobs:
 
     - name: Build the Docker image
       run: docker build -t my-app .
-    # Ref: https://github.com/marketplace/actions/aqua-security-trivy
+
+    - name: Install Trivy
+      run: |
+        echo "Installing Trivy..."
+        sudo apt-get update
+        wget -qO- https://github.com/aquasecurity/trivy/releases/download/v0.45.0/trivy_0.45.0_Linux-64bit.tar.gz | tar xzv
+        sudo mv trivy /usr/local/bin/
+        trivy --version
+
     - name: Run Trivy scan
-      id: trivy
-      uses: aquasecurity/trivy-action@0.20.0
-      with:
-        image-ref: my-app
-        format: 'table'
-        exit-code: '1' # Fail the job if vulnerabilities are found
-        severity: 'CRITICAL'
-        ignore-unfixed: true
-        output: trivy_report.txt
+      run: |
+        echo "Running Trivy scan..."
+        trivy image --severity CRITICAL --ignore-unfixed --exit-code 1 --format table --output trivy_report.txt my-app
 
     - name: Upload Trivy report
       uses: actions/upload-artifact@v3
