@@ -1,0 +1,53 @@
+name: Trivy Security Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  trivy_scan:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Build the Docker image
+      run: docker build -t my-app .
+
+    - name: Run Trivy scan
+      id: trivy
+      uses: aquasecurity/trivy-action@v0.10.1
+      with:
+        image-ref: my-app
+        format: 'table'
+        exit-code: '1' # Fail the job if vulnerabilities are found
+        severity: 'CRITICAL'
+        ignore-unfixed: true
+        output: trivy_report.txt
+
+    - name: Upload Trivy report
+      uses: actions/upload-artifact@v3
+      with:
+        name: trivy-report
+        path: trivy_report.txt
+
+    - name: Show scan report
+      if: failure()
+      run: cat trivy_report.txt
+
+    - name: Set build status based on Trivy scan
+      if: failure()
+      run: echo "Vulnerabilities found, failing the build."

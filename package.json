@@ -1,0 +1,13 @@
+{
+    "name": "sample-app",
+    "version": "1.0.0",
+    "description": "A simple app for testing Trivy scanning",
+    "main": "app.js",
+    "scripts": {
+      "start": "node app.js"
+    },
+    "dependencies": {
+      "express": "^4.17.1"
+    }
+  }
+  
