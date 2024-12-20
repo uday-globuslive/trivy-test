@@ -12,7 +12,7 @@ if [ -z "$ProjectFolder" ]; then
 fi
 
 # Define the Trivy executable path and output report files
-TrivyPath="/temp/trivy"
+TrivyPath="/tmp/trivy1/trivy"
 JsonReportFile="trivy-report.json"
 HtmlReportFile="trivy-report.html"
 
@@ -31,11 +31,18 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Run Trivy scan again and generate the HTML report
-"$TrivyPath" fs "$ProjectFolder" --format html --output "$HtmlReportFile"
+# Check if `trivy-html` tool is installed to convert JSON to HTML
+if ! command -v trivy-html &> /dev/null; then
+    echo "[ERROR] trivy-html tool is not installed. Please install it to generate HTML reports."
+    exit 1
+fi
+
+# Convert JSON to HTML report using trivy-html
+echo "[INFO] Converting JSON report to HTML format."
+trivy-html -i "$JsonReportFile" -o "$HtmlReportFile"
 
 if [ $? -ne 0 ]; then
-    echo "[ERROR] Trivy scan failed while generating HTML report."
+    echo "[ERROR] Failed to convert the JSON report to HTML."
     exit 1
 fi
 
