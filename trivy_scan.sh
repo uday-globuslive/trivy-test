@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the HTTPS proxy environment variable
-export https_proxy="proxy.mccamish.com"
+export https_proxy="proxy.mccamish.com:443"
 
 # Check if the project folder is provided as an argument
 ProjectFolder="$1"
