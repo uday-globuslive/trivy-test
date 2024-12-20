@@ -22,12 +22,20 @@ if [ ! -f "$TrivyPath" ]; then
     exit 1
 fi
 
-# Run Trivy scan and generate both JSON and HTML reports
+# Run Trivy scan and generate the JSON report
 echo "[INFO] Scanning the project folder: $ProjectFolder"
-"$TrivyPath" fs "$ProjectFolder" --format json --output "$JsonReportFile" --format html --output "$HtmlReportFile"
+"$TrivyPath" fs "$ProjectFolder" --format json --output "$JsonReportFile"
 
 if [ $? -ne 0 ]; then
-    echo "[ERROR] Trivy scan failed."
+    echo "[ERROR] Trivy scan failed while generating JSON report."
+    exit 1
+fi
+
+# Run Trivy scan again and generate the HTML report
+"$TrivyPath" fs "$ProjectFolder" --format html --output "$HtmlReportFile"
+
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Trivy scan failed while generating HTML report."
     exit 1
 fi
 
@@ -54,6 +62,6 @@ if jq -e . > /dev/null 2>&1 <<< "$JsonReportFile"; then
         exit 0
     fi
 else
-    echo "[ERROR] Failed to parse the Trivy report."
+    echo "[ERROR] Failed to parse the Trivy JSON report."
     exit 1
 fi
